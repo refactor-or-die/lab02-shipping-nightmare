@@ -5,7 +5,7 @@ UWAGA: Ten kod wymaga refaktoryzacji! Użyj wzorca Strategy.
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
-
+from abc import ABC, abstractmethod
 
 class Package:
     """Paczka do wysyłki"""
@@ -20,14 +20,24 @@ class Package:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2] / 1000000  # m³
 
+class Calculate(ABC):
+        @abstractmethod
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
+            pass
 
-class ShippingCalculator:
-    """
-    Kalkulator kosztów wysyłki.
-    TODO: Ten kod to koszmar! Refaktoryzacja z użyciem Strategy Pattern.
-    """
+class ShippingCalculator(Calculate):
     
     def __init__(self):
+        self.strategies = {
+            "standard": self.Standard(),
+            "express": self.Express(),
+            "same_day": self.SameDay(),
+            "economy": self.Economy(),
+            "international_standard": self.InternationalStandard(),
+            "drone": self.Drone(),
+            "locker": self.Locker()
+
+        }
         self.base_rates = {
             "standard": 15,
             "express": 30,
@@ -38,25 +48,22 @@ class ShippingCalculator:
             "drone": 40,
             "locker": 12
         }
+
+    def calculate_shipping(self, package: Package, shipping_types: str, distance: float, customer_type: str = "regular") -> Dict:
+        strategy = self.strategies.get(shipping_types)
+        if not strategy:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": f"Nieznany typ dostawy: {shipping_types}"
+            }
+        
+        return strategy.calculate_shipping(package, distance, customer_type)
+
     
-    def calculate_shipping(self, package: Package, shipping_type: str, 
-                         distance: float, customer_type: str = "regular") -> Dict:
-        """
-        Oblicza koszt wysyłki.
         
-        Args:
-            package: Paczka do wysyłki
-            shipping_type: Typ wysyłki
-            distance: Odległość w km
-            customer_type: "regular", "premium", "vip"
-            
-        Returns:
-            Dict z kosztem, czasem dostawy i dodatkową informacją
-        """
-        
-        # Ten if-else nightmare zaczyna się tutaj...
-        
-        if shipping_type == "standard":
+    class Standard:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
             base_cost = self.base_rates["standard"]
             
             # Dodatkowe opłaty za wagę
@@ -88,8 +95,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": "Standardowa dostawa kurierem"
             }
-            
-        elif shipping_type == "express":
+    class Express:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
             base_cost = self.base_rates["express"]
             
             # Express nie przyjmuje powyżej 15kg
@@ -125,10 +132,9 @@ class ShippingCalculator:
                 "cost": round(base_cost, 2),
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": "Ekspresowa dostawa - priorytet"
-            }
-            
-        elif shipping_type == "same_day":
-            # Same day tylko do 50km
+            }               
+    class SameDay:
+         def calculate_shipping(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
             if distance > 50:
                 return {
                     "cost": None,
@@ -164,8 +170,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now(),
                 "info": "Dostawa tego samego dnia!"
             }
-            
-        elif shipping_type == "economy":
+    class Economy:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str="regular") ->Dict:
             base_cost = self.base_rates["economy"]
             
             # Economy ma minimalną opłatę
@@ -194,8 +200,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": f"Ekonomiczna dostawa (5-10 dni)"
             }
-            
-        elif shipping_type == "international_standard":
+    class InternationalStandard:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str="regular") ->Dict:
             base_cost = self.base_rates["international_standard"]
             
             # Opłaty celne symulowane
@@ -232,9 +238,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": f"Dostawa międzynarodowa ({zone}) - cło wliczone"
             }
-            
-        elif shipping_type == "drone":
-            # Drone delivery - przyszłość!
+    class Drone:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str="regular") ->Dict:
             if package.weight > 2:
                 return {
                     "cost": None,
@@ -274,8 +279,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now() + timedelta(minutes=delivery_time),
                 "info": f"Dostawa dronem w {delivery_time} minut!"
             }
-            
-        elif shipping_type == "locker":
+    class Locker:
+        def calculate_shipping(self, package: Package, distance: float, customer_type: str="regular") ->Dict:
             base_cost = self.base_rates["locker"]
             
             # Paczkomaty mają limity
@@ -312,14 +317,8 @@ class ShippingCalculator:
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": "Dostawa do paczkomatu"
             }
-            
-        else:
-            # Nieznany typ dostawy
-            return {
-                "cost": None,
-                "delivery_date": None,
-                "info": f"Nieznany typ dostawy: {shipping_type}"
-            }
+    
+
             
 
 # Przykład użycia
