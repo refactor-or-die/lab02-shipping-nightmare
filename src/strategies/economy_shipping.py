@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from random import random
+import random
 from typing import Dict
 
 from src.strategies.shipping_strategy import ShippingStrategy
@@ -9,7 +9,7 @@ from src.models.package import Package
 class EconomyShipping(ShippingStrategy):
     BASE_RATE = 10
 
-    def shipping(self, package: Package, shipping_type: str, distance: float, customer_type: str = "regular") -> Dict:
+    def calculate(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
         base_cost = self.BASE_RATE
 
         # Economy ma minimalną opłatę

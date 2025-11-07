@@ -4,5 +4,5 @@ from typing import Dict
 
 class ShippingStrategy(ABC):
     @abstractmethod
-    def shipping(self, package: Package, shipping_type: str, distance: float, customer_type: str = "regular") -> Dict:
+    def calculate(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
         pass

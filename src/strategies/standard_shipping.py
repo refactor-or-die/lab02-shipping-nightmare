@@ -7,7 +7,7 @@ from src.models.package import Package
 class StandardShipping(ShippingStrategy):
     BASE_RATE = 15
 
-    def shipping(self, package: Package, shipping_type: str, distance: float, customer_type: str = "regular") -> Dict:
+    def calculate(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
         base_cost = self.BASE_RATE
 
         # Dodatkowe opłaty za wagę

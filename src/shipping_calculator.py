@@ -2,9 +2,8 @@
 System obliczania kosztów wysyłki w sklepie internetowym.
 UWAGA: Ten kod wymaga refaktoryzacji! Użyj wzorca Strategy.
 """
-from typing import Dict, Tuple
-from src.strategies import standard_shipping, express_shipping, drone_shipping, locker_shipping, economy_shipping, \
-    same_day_shipping
+from typing import Dict
+from src.strategies import standard_shipping, express_shipping, drone_shipping, locker_shipping, economy_shipping, same_day_shipping, international_standard_shipping
 from src.models.package import Package
 
 
@@ -22,6 +21,7 @@ class ShippingCalculator:
             "economy": economy_shipping.EconomyShipping(),
             "drone": drone_shipping.DroneShipping(),
             "locker": locker_shipping.LockerShipping(),
+            "international_standard": international_standard_shipping.InternationalShipping(),
         }
     
     def calculate_shipping(self, package: Package, shipping_type: str, 

@@ -10,7 +10,7 @@ from src.models.package import Package
 class DroneShipping(ShippingStrategy):
     BASE_RATE = 40
 
-    def shipping(self, package: Package, shipping_type: str, distance: float, customer_type: str = "regular") -> Dict:
+    def calculate(self, package: Package, distance: float, customer_type: str = "regular") -> Dict:
         base_cost = self.BASE_RATE
 
         if package.weight > 2:
