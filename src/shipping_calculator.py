@@ -1,10 +1,7 @@
-"""
-System obliczania kosztów wysyłki w sklepie internetowym.
-UWAGA: Ten kod wymaga refaktoryzacji! Użyj wzorca Strategy.
-"""
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
+from abc import ABC, abstractmethod
 
 
 class Package:
@@ -21,306 +18,331 @@ class Package:
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2] / 1000000  # m³
 
 
-class ShippingCalculator:
-    """
-    Kalkulator kosztów wysyłki.
-    TODO: Ten kod to koszmar! Refaktoryzacja z użyciem Strategy Pattern.
-    """
-    
-    def __init__(self):
-        self.base_rates = {
-            "standard": 15,
-            "express": 30,
-            "same_day": 50,
-            "economy": 10,
-            "international_standard": 45,
-            "international_express": 80,
-            "drone": 40,
-            "locker": 12
+class ShippingStrategy(ABC):
+
+    def __init__(self, base_rate: float):
+        self.base_rate = base_rate
+
+    @abstractmethod
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+
+        pass
+
+    def apply_customer_discount(self, cost: float, customer_type: str,
+                                premium_rate: float = 0.9, vip_rate: float = 0.8) -> float:
+        if customer_type == "premium":
+            return cost * premium_rate
+        elif customer_type == "vip":
+            return cost * vip_rate
+        return cost
+
+
+class StandardShippingStrategy(ShippingStrategy):
+
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        base_cost = self.base_rate
+
+        # Dodatkowe opłaty za wagę
+        if package.weight > 20:
+            base_cost += (package.weight - 20) * 5
+        elif package.weight > 10:
+            base_cost += (package.weight - 10) * 3
+        elif package.weight > 5:
+            base_cost += (package.weight - 5) * 2
+
+        # Opłata za wymiary
+        if package.volume > 0.1:
+            base_cost += 20
+
+        if distance > 100:
+            base_cost += (distance - 100) * 0.1
+
+        base_cost = self.apply_customer_discount(base_cost, customer_type)
+
+        delivery_days = 3 if distance < 200 else 5
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": "Standardowa dostawa kurierem"
         }
-    
-    def calculate_shipping(self, package: Package, shipping_type: str, 
-                         distance: float, customer_type: str = "regular") -> Dict:
-        """
-        Oblicza koszt wysyłki.
-        
-        Args:
-            package: Paczka do wysyłki
-            shipping_type: Typ wysyłki
-            distance: Odległość w km
-            customer_type: "regular", "premium", "vip"
-            
-        Returns:
-            Dict z kosztem, czasem dostawy i dodatkową informacją
-        """
-        
-        # Ten if-else nightmare zaczyna się tutaj...
-        
-        if shipping_type == "standard":
-            base_cost = self.base_rates["standard"]
-            
-            # Dodatkowe opłaty za wagę
-            if package.weight > 5:
-                base_cost += (package.weight - 5) * 2
-            elif package.weight > 10:
-                base_cost += (package.weight - 10) * 3
-            elif package.weight > 20:
-                base_cost += (package.weight - 20) * 5
-                
-            # Opłata za wymiary
-            if package.volume > 0.1:
-                base_cost += 20
-                
-            # Opłata za dystans
-            if distance > 100:
-                base_cost += (distance - 100) * 0.1
-                
-            # Rabat dla klientów
-            if customer_type == "premium":
-                base_cost *= 0.9
-            elif customer_type == "vip":
-                base_cost *= 0.8
-                
-            delivery_days = 3 if distance < 200 else 5
-            
+
+
+class ExpressShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        if package.weight > 15:
             return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(days=delivery_days),
-                "info": "Standardowa dostawa kurierem"
+                "cost": None,
+                "delivery_date": None,
+                "info": "Express nie obsługuje paczek powyżej 15kg"
             }
-            
-        elif shipping_type == "express":
-            base_cost = self.base_rates["express"]
-            
-            # Express nie przyjmuje powyżej 15kg
-            if package.weight > 15:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Express nie obsługuje paczek powyżej 15kg"
-                }
-            
-            # Express ma inne progi wagowe
-            if package.weight > 8:
-                base_cost += (package.weight - 3) * 4 + (package.weight - 8) * 6
-            elif package.weight > 3:
-                base_cost += (package.weight - 3) * 4
-                
-            # Express ma wyższą opłatę za dystans
-            base_cost += distance * 0.2
-            
-            # Opłata za przesyłki delikatne
-            if package.is_fragile:
-                base_cost += 15
-                
-            # Rabaty
-            if customer_type == "premium":
-                base_cost *= 0.95
-            elif customer_type == "vip":
-                base_cost *= 0.85
-                
-            delivery_days = 1 if distance < 300 else 2
-            
+
+        base_cost = self.base_rate
+
+        if package.weight > 8:
+            base_cost += (package.weight - 3) * 4 + (package.weight - 8) * 6
+        elif package.weight > 3:
+            base_cost += (package.weight - 3) * 4
+
+        base_cost += distance * 0.2
+
+        if package.is_fragile:
+            base_cost += 15
+
+        base_cost = self.apply_customer_discount(base_cost, customer_type, 0.95, 0.85)
+
+        delivery_days = 1 if distance < 300 else 2
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": "Ekspresowa dostawa - priorytet"
+        }
+
+
+class SameDayShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        if distance > 50:
             return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(days=delivery_days),
-                "info": "Ekspresowa dostawa - priorytet"
+                "cost": None,
+                "delivery_date": None,
+                "info": "Same day delivery dostępne tylko do 50km"
             }
-            
-        elif shipping_type == "same_day":
-            # Same day tylko do 50km
-            if distance > 50:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Same day delivery dostępne tylko do 50km"
-                }
-                
-            base_cost = self.base_rates["same_day"]
-            
-            # Same day ma stałą opłatę za wagę
-            if package.weight > 5:
-                base_cost += 30
-            elif package.weight > 10:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Same day nie obsługuje paczek powyżej 10kg"
-                }
-                
-            # Dodatkowa opłata za porę dnia
-            current_hour = datetime.now().hour
-            if current_hour > 14:
-                base_cost += 20  # Po 14:00 drożej
-                
-            # VIP ma darmową dostawę same day!
-            if customer_type == "vip":
-                base_cost = 0
-            elif customer_type == "premium":
-                base_cost *= 0.7
-                
+
+        if package.weight > 10:
             return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now(),
-                "info": "Dostawa tego samego dnia!"
+                "cost": None,
+                "delivery_date": None,
+                "info": "Same day nie obsługuje paczek powyżej 10kg"
             }
-            
-        elif shipping_type == "economy":
-            base_cost = self.base_rates["economy"]
-            
-            # Economy ma minimalną opłatę
-            if package.weight < 1:
-                base_cost = 8
-            else:
-                base_cost += package.weight * 1.5
-                
-            # Nie dostarczamy przesyłek delikatnych economy
-            if package.is_fragile:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Economy nie obsługuje przesyłek delikatnych"
-                }
-                
-            # Im dalej tym taniej (transport zbiorczy)
-            if distance > 500:
-                base_cost *= 0.8
-                
-            # Brak rabatów dla economy
-            delivery_days = random.randint(5, 10)  # Nieprzewidywalny czas
-            
+
+        base_cost = self.base_rate
+
+        if package.weight > 5:
+            base_cost += 30
+
+        current_hour = datetime.now().hour
+        if current_hour > 14:
+            base_cost += 20  # Po 14:00 drożej
+
+        if customer_type == "vip":
+            base_cost = 0
+        elif customer_type == "premium":
+            base_cost *= 0.7
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now(),
+            "info": "Dostawa tego samego dnia!"
+        }
+
+
+class EconomyShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        if package.is_fragile:
             return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(days=delivery_days),
-                "info": f"Ekonomiczna dostawa (5-10 dni)"
+                "cost": None,
+                "delivery_date": None,
+                "info": "Economy nie obsługuje przesyłek delikatnych"
             }
-            
-        elif shipping_type == "international_standard":
-            base_cost = self.base_rates["international_standard"]
-            
-            # Opłaty celne symulowane
-            customs = package.value * 0.23 if package.value > 150 else 0
-            base_cost += customs
-            
-            # Waga międzynarodowa
-            if package.weight > 2:
-                base_cost += (package.weight - 2) * 8
-            elif package.weight > 20:
-                base_cost += (package.weight - 20) * 12
-                
-            # Strefa dostaw
-            if distance < 1000:
-                zone = "EU"
-                delivery_days = 7
-            elif distance < 5000:
-                zone = "Europe"
-                base_cost *= 1.5
-                delivery_days = 14
-            else:
-                zone = "World"
-                base_cost *= 2.5
-                delivery_days = 21
-                
-            # Rabaty międzynarodowe
-            if customer_type == "vip":
-                base_cost *= 0.7
-            elif customer_type == "premium":
-                base_cost *= 0.85
-                
-            return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(days=delivery_days),
-                "info": f"Dostawa międzynarodowa ({zone}) - cło wliczone"
-            }
-            
-        elif shipping_type == "drone":
-            # Drone delivery - przyszłość!
-            if package.weight > 2:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Drony obsługują tylko paczki do 2kg"
-                }
-                
-            if distance > 20:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Zasięg dronów to maksymalnie 20km"
-                }
-                
-            base_cost = self.base_rates["drone"]
-            
-            # Warunki pogodowe (symulacja)
-            weather_penalty = random.choice([0, 10, 20, 50])
-            if weather_penalty == 50:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Złe warunki pogodowe - drony nie latają"
-                }
-            
-            base_cost += weather_penalty
-            
-            # Premium i VIP mają priorytet
-            if customer_type in ["premium", "vip"]:
-                base_cost *= 0.5
-                delivery_time = 30  # minut
-            else:
-                delivery_time = 60  # minut
-                
-            return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(minutes=delivery_time),
-                "info": f"Dostawa dronem w {delivery_time} minut!"
-            }
-            
-        elif shipping_type == "locker":
-            base_cost = self.base_rates["locker"]
-            
-            # Paczkomaty mają limity
-            if package.weight > 25:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Paczkomaty obsługują maksymalnie 25kg"
-                }
-                
-            # Sprawdzenie wymiarów
-            max_dim = max(package.dimensions)
-            if max_dim > 60:
-                return {
-                    "cost": None,
-                    "delivery_date": None,
-                    "info": "Paczka za duża do paczkomatu"
-                }
-                
-            # Stała opłata niezależnie od wagi
-            if distance > 50:
-                base_cost += 3
-                
-            # VIP ma darmowe paczkomaty
-            if customer_type == "vip":
-                base_cost = 0
-            elif customer_type == "premium":
-                base_cost *= 0.8
-                
-            delivery_days = 1 if distance < 200 else 2
-            
-            return {
-                "cost": round(base_cost, 2),
-                "delivery_date": datetime.now() + timedelta(days=delivery_days),
-                "info": "Dostawa do paczkomatu"
-            }
-            
+
+        base_cost = self.base_rate
+
+        if package.weight < 1:
+            base_cost = 8
         else:
-            # Nieznany typ dostawy
+            base_cost += package.weight * 1.5
+
+        if distance > 500:
+            base_cost *= 0.8
+
+        delivery_days = random.randint(5, 10)  # Nieprzewidywalny czas
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": f"Ekonomiczna dostawa (5-10 dni)"
+        }
+
+
+class InternationalStandardShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        base_cost = self.base_rate
+
+        customs = package.value * 0.23 if package.value > 150 else 0
+        base_cost += customs
+
+        if package.weight > 20:
+            base_cost += (package.weight - 20) * 12
+        elif package.weight > 2:
+            base_cost += (package.weight - 2) * 8
+
+        if distance < 1000:
+            zone = "EU"
+            delivery_days = 7
+        elif distance < 5000:
+            zone = "Europe"
+            base_cost *= 1.5
+            delivery_days = 14
+        else:
+            zone = "World"
+            base_cost *= 2.5
+            delivery_days = 21
+
+        base_cost = self.apply_customer_discount(base_cost, customer_type, 0.85, 0.7)
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": f"Dostawa międzynarodowa ({zone}) - cło wliczone"
+        }
+
+
+class InternationalExpressShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        base_cost = self.base_rate
+
+        customs = package.value * 0.23 if package.value > 150 else 0
+        base_cost += customs
+
+        if package.weight > 2:
+            base_cost += (package.weight - 2) * 12
+
+        if distance < 1000:
+            zone = "EU"
+            delivery_days = 3
+        elif distance < 5000:
+            zone = "Europe"
+            base_cost *= 1.5
+            delivery_days = 7
+        else:
+            zone = "World"
+            base_cost *= 2.5
+            delivery_days = 10
+
+        base_cost = self.apply_customer_discount(base_cost, customer_type, 0.85, 0.7)
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": f"Ekspresowa dostawa międzynarodowa ({zone})"
+        }
+
+
+class DroneShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        if package.weight > 2:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": "Drony obsługują tylko paczki do 2kg"
+            }
+
+        if distance > 20:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": "Zasięg dronów to maksymalnie 20km"
+            }
+
+        base_cost = self.base_rate
+
+        weather_penalty = random.choice([0, 10, 20, 50])
+        if weather_penalty == 50:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": "Złe warunki pogodowe - drony nie latają"
+            }
+
+        base_cost += weather_penalty
+
+        if customer_type in ["premium", "vip"]:
+            base_cost *= 0.5
+            delivery_time = 30
+        else:
+            delivery_time = 60
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(minutes=delivery_time),
+            "info": f"Dostawa dronem w {delivery_time} minut!"
+        }
+
+
+class LockerShippingStrategy(ShippingStrategy):
+
+    def calculate(self, package: Package, distance: float, customer_type: str) -> Dict:
+        if package.weight > 25:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": "Paczkomaty obsługują maksymalnie 25kg"
+            }
+
+        max_dim = max(package.dimensions)
+        if max_dim > 60:
+            return {
+                "cost": None,
+                "delivery_date": None,
+                "info": "Paczka za duża do paczkomatu"
+            }
+
+        base_cost = self.base_rate
+
+        if distance > 50:
+            base_cost += 3
+
+        if customer_type == "vip":
+            base_cost = 0
+        elif customer_type == "premium":
+            base_cost *= 0.8
+
+        delivery_days = 1 if distance < 200 else 2
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": "Dostawa do paczkomatu"
+        }
+
+class ShippingCalculator:
+    def __init__(self):
+        self.strategies = {
+            "standard": StandardShippingStrategy(15),
+            "express": ExpressShippingStrategy(30),
+            "same_day": SameDayShippingStrategy(50),
+            "economy": EconomyShippingStrategy(10),
+            "international_standard": InternationalStandardShippingStrategy(45),
+            "international_express": InternationalExpressShippingStrategy(80),
+            "drone": DroneShippingStrategy(40),
+            "locker": LockerShippingStrategy(12)
+        }
+
+    def calculate_shipping(self, package: Package, shipping_type: str,
+                           distance: float, customer_type: str = "regular") -> Dict:
+
+        strategy = self.strategies.get(shipping_type)
+
+        if strategy is None:
             return {
                 "cost": None,
                 "delivery_date": None,
                 "info": f"Nieznany typ dostawy: {shipping_type}"
             }
-            
+
+        return strategy.calculate(package, distance, customer_type)
+
+    def add_shipping_strategy(self, name: str, strategy: ShippingStrategy):
+        self.strategies[name] = strategy
+
 
 # Przykład użycia
 if __name__ == "__main__":
