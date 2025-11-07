@@ -5,6 +5,7 @@ UWAGA: Ten kod wymaga refaktoryzacji! Użyj wzorca Strategy.
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
+from abc import abstractmethod
 
 
 class Package:
@@ -21,12 +22,79 @@ class Package:
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2] / 1000000  # m³
 
 
+class ShippingStrategy:
+    @abstractmethod
+    def calculateCost(self, package: Package,distance: float, customer_type: str = "regular") -> Dict:
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+    @abstractmethod
+    def calculateVolumeCost(self):
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+    @abstractmethod
+    def calculateWeightCost(self):
+        pass
+
+
+class StandardShippingStrategy:
+
+    def calculateCost(self, package: Package,distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
+        if package.weight > 5:
+            base_cost += (package.weight - 5) * 2
+        elif package.weight > 10:
+            base_cost += (package.weight - 10) * 3
+        elif package.weight > 20:
+            base_cost += (package.weight - 20) * 5
+
+        # Opłata za wymiary
+        if package.volume > 0.1:
+            base_cost += 20
+
+        # Opłata za dystans
+        if distance > 100:
+            base_cost += (distance - 100) * 0.1
+
+        # Rabat dla klientów
+        if customer_type == "premium":
+            base_cost *= 0.9
+        elif customer_type == "vip":
+            base_cost *= 0.8
+
+        delivery_days = 3 if distance < 200 else 5
+
+        return {
+            "cost": round(base_cost, 2),
+            "delivery_date": datetime.now() + timedelta(days=delivery_days),
+            "info": "Standardowa dostawa kurierem"
+        }
+
+
 class ShippingCalculator:
     """
     Kalkulator kosztów wysyłki.
     TODO: Ten kod to koszmar! Refaktoryzacja z użyciem Strategy Pattern.
     """
-    
+
     def __init__(self):
         self.base_rates = {
             "standard": 15,
@@ -43,11 +111,11 @@ class ShippingCalculator:
                          distance: float, customer_type: str = "regular") -> Dict:
         """
         Oblicza koszt wysyłki.
-        
         Args:
             package: Paczka do wysyłki
             shipping_type: Typ wysyłki
             distance: Odległość w km
+
             customer_type: "regular", "premium", "vip"
             
         Returns:
@@ -58,7 +126,7 @@ class ShippingCalculator:
         
         if shipping_type == "standard":
             base_cost = self.base_rates["standard"]
-            
+
             # Dodatkowe opłaty za wagę
             if package.weight > 5:
                 base_cost += (package.weight - 5) * 2
@@ -66,29 +134,29 @@ class ShippingCalculator:
                 base_cost += (package.weight - 10) * 3
             elif package.weight > 20:
                 base_cost += (package.weight - 20) * 5
-                
+
             # Opłata za wymiary
             if package.volume > 0.1:
                 base_cost += 20
-                
+
             # Opłata za dystans
             if distance > 100:
                 base_cost += (distance - 100) * 0.1
-                
+
             # Rabat dla klientów
             if customer_type == "premium":
                 base_cost *= 0.9
             elif customer_type == "vip":
                 base_cost *= 0.8
-                
+
             delivery_days = 3 if distance < 200 else 5
-            
+
             return {
                 "cost": round(base_cost, 2),
                 "delivery_date": datetime.now() + timedelta(days=delivery_days),
                 "info": "Standardowa dostawa kurierem"
             }
-            
+
         elif shipping_type == "express":
             base_cost = self.base_rates["express"]
             
