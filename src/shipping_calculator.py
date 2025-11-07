@@ -29,7 +29,7 @@ class ShippingStrategy(ABC):
     def calculate(self, package: Package,distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         pass
 
-class StandardShippingStrategy:
+class StandardShippingStrategy(ShippingStrategy):
 
     def calculate(self, package: Package,distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         if package.weight > 5:
@@ -61,7 +61,7 @@ class StandardShippingStrategy:
             "info": "Standardowa dostawa kurierem"
         }
 
-class ExpressShippingStrategy:
+class ExpressShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package,distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
 
         # Express nie przyjmuje powyżej 15kg
@@ -99,7 +99,7 @@ class ExpressShippingStrategy:
             "info": "Ekspresowa dostawa - priorytet"
         }
 
-class SameDayShippingStrategy:
+class SameDayShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package, distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         if distance > 50:
             return {
@@ -135,7 +135,7 @@ class SameDayShippingStrategy:
             "info": "Dostawa tego samego dnia!"
         }
 
-class EconomyShippingStrategy:
+class EconomyShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package, distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         if package.weight < 1:
             base_cost = 8
@@ -163,7 +163,7 @@ class EconomyShippingStrategy:
             "info": f"Ekonomiczna dostawa (5-10 dni)"
         }
 
-class InternationalShippingStrategy:
+class InternationalShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package, distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         customs = package.value * 0.23 if package.value > 150 else 0
         base_cost += customs
@@ -199,7 +199,7 @@ class InternationalShippingStrategy:
             "info": f"Dostawa międzynarodowa ({zone}) - cło wliczone"
         }
 
-class DroneShippingStrategy:
+class DroneShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package, distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         if package.weight > 2:
             return {
@@ -241,7 +241,7 @@ class DroneShippingStrategy:
             "info": f"Dostawa dronem w {delivery_time} minut!"
         }
 
-class LockerShippingStrategy:
+class LockerShippingStrategy(ShippingStrategy):
     def calculate(self, package: Package, distance: float, base_cost: int, customer_type: str = "regular") -> Dict:
         if package.weight > 25:
             return {
