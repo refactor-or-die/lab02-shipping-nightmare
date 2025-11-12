@@ -67,11 +67,15 @@ A: Nie.
 
 **Q: Python jest po&#@%!!!**
 
-A: Be my guest i spróbuj JavaScript, Perla albo PHP.
+A: Be my guest i spróbuj JavaScript, Perla albo PHP (ale nie na zajęciach).
 
 **Q: To może spróbuję Javy???**
 
 A: Nie.
+
+**Q: Ale głupi ten prowadzący, każe używać Pythona a sam go nie zna?**
+
+A: Nie mam potrzeby udawać wszystkowiedzącego. Poza tym - "nikt tu nikogo pod pistoletem nie trzyma" :)
 
 ---
 
