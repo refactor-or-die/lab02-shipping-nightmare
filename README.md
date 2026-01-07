@@ -1,84 +1,84 @@
 # Lab 02: Shipping Nightmare
 
-## Czy wiesz, że...
-Przeciętny programista spędza 73% czasu na debugowaniu if-ów w kodzie legacy? (źródło: there is no source, go to church)
+## Did you know...
+The average programmer spends 73% of their time debugging if-statements in legacy code? (source: there is no source, go to church)
 
-## Twoje zadanie
-Otrzymałeś kod kalkulatora kosztów wysyłki w e-commerce. Poprzedni developer uciekł w Bieszczady i zostawił po sobie metodę z **ponad 200 liniami if-ów**. 
+## Your task
+You've received an e-commerce shipping cost calculator code. The previous developer ran away to the Bieszczady mountains and left behind a method with **over 200 lines of if-statements**.
 
-Twój szef krzyczy: "Musimy dodać wysyłkę balonem na ogrzane powietrze!" 
-Ty patrzysz na kod i myślisz: "Gdzie ja to wcisnę?"
+Your boss yells: "We need to add hot air balloon shipping!"
+You look at the code and think: "Where am I supposed to squeeze this in?"
 
-**Rozwiązanie:** Wzorzec Strategy!
+**Solution:** Strategy Pattern!
 
-## Co zawiera repozytorium
-- `shipping_calculator.py` - koszmar każdego programisty
-- `test_shipping_calculator.py` - testy (NIE RUSZAĆ!)
-- Ten README
-- Cośtam jeszcze
+## What's in the repository
+- `shipping_calculator.py` - every programmer's nightmare
+- `test_shipping_calculator.py` - tests (DON'T TOUCH!)
+- This README
+- Some other stuff
 
-## Instrukcja
-1. Sklonuj repo i stwórz branch `lab2_nazwisko1_nazwisko2`
-2. Uruchom testy: `pytest` (powinny przejść)
-3. Zrefaktoryzuj kod używając wzorca Strategy
-4. Uruchom testy ponownie (MUSZĄ przejść)
-5. Commit + push na swój branch
-6. Przygotuj się do prezentacji
+## Instructions
+1. Clone the repo and create a branch `lab2_lastname1_lastname2`
+2. Run the tests: `pytest` (they should pass)
+3. Refactor the code using the Strategy pattern
+4. Run the tests again (they MUST pass)
+5. Commit + push to your branch
+6. Prepare for presentation
 
-## Wskazówki
-- Każdy typ wysyłki (`standard`, `express`, itd.) powinien być osobną strategią
-- Nie zmieniaj API metody `calculate_shipping()` - testy muszą działać!
-- Pamiętaj o edge case'ach (np. drone nie lata w złą pogodę)
-- If-ów w nowym kodzie powinno być maksymalnie kilka (nie 200!)
+## Hints
+- Each shipping type (`standard`, `express`, etc.) should be a separate strategy
+- Don't change the `calculate_shipping()` method API - tests must work!
+- Remember edge cases (e.g., drones don't fly in bad weather)
+- There should be at most a few if-statements in the new code (not 200!)
 
-## Co zyskasz?
-- Kod, który da się czytać bez płaczu
-- Łatwość dodania nowego typu dostawy
-- Możliwość testowania każdej strategii osobno
-- Szacunek kolegów z zespołu
+## What you'll gain
+- Code you can read without crying
+- Easy addition of new delivery types
+- Ability to test each strategy separately
+- Respect from your teammates
 
-## Kryteria oceny
-- Testy przechodzą
-- Użyty wzorzec Strategy
-- Kod jest czytelny
-- Można łatwo dodać nowy typ wysyłki
-- Prezentacja była zrozumiała
+## Grading criteria
+- Tests pass
+- Strategy pattern is used
+- Code is readable
+- Easy to add new shipping type
+- Presentation was clear
 
 ## FAQ
-**Q: Czy mogę użyć Javy?**
+**Q: Can I use Java?**
 
-A: Nie.
+A: No.
 
-**Q: Czy mogę użyć bibliotek zewnętrznych?**
+**Q: Can I use external libraries?**
 
-A: Nie potrzebujesz. Python ma wszystko (ABC, type hints).
+A: You don't need to. Python has everything (ABC, type hints).
 
-**Q: Co z tą losowością w drone?**
+**Q: What about the randomness in drone?**
 
-A: Zostaw ją. Drony nie lubią deszczu.
+A: Leave it. Drones don't like rain.
 
-**Q: 200 linii to dużo?**
+**Q: Is 200 lines a lot?**
 
-A: Widziałem metodę z 2000 linii. Miała 47 poziomów zagnieżdżenia if-ów. Programista, który to napisał, teraz hoduje alpaki (serio).
+A: I've seen a method with 2000 lines. It had 47 levels of nested if-statements. The programmer who wrote it now raises alpacas (seriously).
 
-**Q: Serio nie mogę użyć Javy?**
+**Q: Seriously, can't I use Java?**
 
-A: Nie.
+A: No.
 
-**Q: Python jest po&#@%!!!**
+**Q: Python sucks!**
 
-A: Be my guest i spróbuj JavaScript, Perla albo PHP (ale nie na zajęciach).
+A: Be my guest and try JavaScript, Perl or PHP (but not in class).
 
-**Q: To może spróbuję Javy???**
+**Q: So maybe I'll try Java???**
 
-A: Nie.
+A: No.
 
-**Q: Ale głupi ten prowadzący, każe używać Pythona a sam go nie zna?**
+**Q: But the instructor is stupid, makes us use Python but doesn't know it himself?**
 
-A: Nie mam potrzeby udawać wszystkowiedzącego. Poza tym - "nikt tu nikogo pod pistoletem nie trzyma" :)
+A: I don't need to pretend to be all-knowing. Besides - "nobody's holding anyone at gunpoint here" :)
 
 ---
 
-*"Dobry kod to taki, który możesz zrozumieć o 3 w nocy po 4 piwach"* - Mądry Senior Developer (jest jak świnka morska)
+*"Good code is code you can understand at 3 AM after 4 beers"* - Wise Senior Developer (looks like a guinea pig)
 
-Powodzenia!
+Good luck!
