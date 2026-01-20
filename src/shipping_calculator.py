@@ -5,8 +5,8 @@ UWAGA: Ten kod wymaga refaktoryzacji! Użyj wzorca Strategy.
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
-from package_type_factory import PackageTypeFactory
-from package_type import *
+from shipping_type_factory import ShippingTypeFactory
+from shipping_type import *
 
 
 class Package:
@@ -58,18 +58,18 @@ class ShippingCalculator:
         
         # Ten if-else nightmare kończy się tutaj...
 
-        factory = PackageTypeFactory()
-        packageType = factory.create(shipping_type)
+        factory = ShippingTypeFactory()
+        shippingType = factory.create(shipping_type)
 
-        if (isinstance(packageType, UnknownPackage)):
+        if (isinstance(shippingType, UnknownShipping)):
             return {
                 "cost": None,
                 "delivery_date": None,
                 "info": f"Nieznany typ dostawy: {shipping_type}"
             }
             
-        elif (isinstance(packageType, PackageType)):
-            return packageType.calculateShipping(package, distance, customer_type)
+        elif (isinstance(shippingType, ShippingType)):
+            return shippingType.calculateShipping(package, distance, customer_type)
             
 
 # Przykład użycia

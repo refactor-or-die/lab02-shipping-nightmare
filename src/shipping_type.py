@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 import random
 
-class PackageType(ABC):
+class ShippingType(ABC):
     @abstractmethod
     def getBaseRate(self):
         pass
@@ -10,7 +10,7 @@ class PackageType(ABC):
     def calculateShipping(self, package, distance, customer_type):
         pass
 
-class StandardPackage(PackageType):
+class StandardShipping(ShippingType):
     def getBaseRate(self):
         return 15
     
@@ -47,7 +47,7 @@ class StandardPackage(PackageType):
             "info": "Standardowa dostawa kurierem"
         }
 
-class ExpressPackage(PackageType):
+class ExpressShipping(ShippingType):
     def getBaseRate(self):
         return 30
     
@@ -89,7 +89,7 @@ class ExpressPackage(PackageType):
             "info": "Ekspresowa dostawa - priorytet"
         }
     
-class SameDayPackage(PackageType):
+class SameDayShipping(ShippingType):
     def getBaseRate(self):
         return 50
     
@@ -132,7 +132,7 @@ class SameDayPackage(PackageType):
             "info": "Dostawa tego samego dnia!"
         }    
 
-class EconomyPackage(PackageType):
+class EconomyShipping(ShippingType):
     def getBaseRate(self):
         return 10
     
@@ -166,7 +166,7 @@ class EconomyPackage(PackageType):
             "info": f"Ekonomiczna dostawa (5-10 dni)"
         }
     
-class InternationalStandardPackage(PackageType):
+class InternationalStandardShipping(ShippingType):
     def getBaseRate(self):
         return 45
     
@@ -209,7 +209,7 @@ class InternationalStandardPackage(PackageType):
         }
     
      
-class DronePackage(PackageType):
+class DroneShipping(ShippingType):
     def getBaseRate(self):
         return 40
     
@@ -256,7 +256,7 @@ class DronePackage(PackageType):
             "info": f"Dostawa dronem w {delivery_time} minut!"
         }
     
-class LockerPackage(PackageType):
+class LockerShipping(ShippingType):
     def getBaseRate(self):
         return 12
     
@@ -298,7 +298,7 @@ class LockerPackage(PackageType):
             "info": "Dostawa do paczkomatu"
         }
 
-class UnknownPackage(PackageType):
+class UnknownShipping(ShippingType):
     def getBaseRate(self):
         return 0
     def calculateShipping(self, package, distance, customer_type):
